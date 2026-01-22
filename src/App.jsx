@@ -1,18 +1,6 @@
 import { useState } from 'react';
 import Tesseract from 'tesseract.js';
-import { Camera, RefreshCw, Languages, ArrowRight } from 'lucide-react';
-
-// === CONFIGURATION ===
-// NOTE: In a real production app, use the official Lingo.dev SDK.
-// For this demo, we mock the translation to show the UI flow immediately.
-const mockTranslateWithLingo = async (text, targetLang) => {
-  console.log(`Sending to Lingo.dev: ${text} -> ${targetLang}`);
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // This is where you would call: await lingo.translate(text, targetLang)
-  return `[${targetLang.toUpperCase()} TRANSLATION]: ${text}`; 
-};
+import { Camera, RefreshCw, Languages, ArrowRight, Globe, FileText } from 'lucide-react';
 
 function App() {
   const [image, setImage] = useState(null);
@@ -20,38 +8,80 @@ function App() {
   const [translatedText, setTranslatedText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState("Ready");
+  
+  // 1. NEW: Source Language (For OCR) & Target Language (For Translation)
+  const [sourceLang, setSourceLang] = useState("jpn"); // Default to Japanese OCR
+  const [targetLang, setTargetLang] = useState("en");  // Default to English Translation
 
-  // 1. Handle Image Upload
   const handleImageUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
       setImage(URL.createObjectURL(e.target.files[0]));
       setExtractedText(""); 
       setTranslatedText("");
+      setProgress("Ready");
     }
   };
 
-  // 2. The "Magic" Function (OCR + Translate)
+  const translateWithRealApi = async (text, target) => {
+    const apiKey = import.meta.env.VITE_LINGO_API_KEY;
+
+    if (!apiKey) return "Error: Missing API Key in .env";
+
+    try {
+      // ⚠️ CRITICAL FIX: Check your Lingo.dev Dashboard for the EXACT URL.
+      // It is often just '/translate' or a specific version. 
+      // Replace this URL with the one found in your docs.
+      const response = await fetch('https://api.lingo.dev/translate', { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          text: text,
+          target_language: target 
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} (Check Endpoint URL)`);
+      }
+
+      const data = await response.json();
+      return data.translation || data.result; 
+
+    } catch (error) {
+      console.error(error);
+      return `Translation Failed: ${error.message}`;
+    }
+  };
+
   const processImage = async () => {
     if (!image) return;
     setIsProcessing(true);
 
     try {
-      // Step A: Extract Text (OCR)
-      setProgress("Scanning Image...");
-      const worker = await Tesseract.createWorker('eng'); // 'eng' detects English characters better
+      // PHASE 1: OCR (The "Eyes")
+      // We pass 'sourceLang' here so Tesseract loads the right brain (e.g., Japanese)
+      setProgress(`Loading OCR Model (${sourceLang})...`);
+      const worker = await Tesseract.createWorker(sourceLang); 
+      
+      setProgress("Reading Text...");
       const result = await worker.recognize(image);
       const rawText = result.data.text;
-      setExtractedText(rawText);
       await worker.terminate();
 
-      // Step B: Translate (Lingo.dev)
-      setProgress("Translating with Lingo...");
-      const translation = await mockTranslateWithLingo(rawText, "es"); // Hardcoded to Spanish for demo
+      if (!rawText.trim()) throw new Error("No text found. Try a clearer image.");
+      setExtractedText(rawText);
+
+      // PHASE 2: TRANSLATE (The "Brain")
+      setProgress(`Translating to ${targetLang.toUpperCase()}...`);
+      const translation = await translateWithRealApi(rawText, targetLang);
       setTranslatedText(translation);
 
     } catch (error) {
-      console.error(error);
-      setProgress("Error occurred");
+      setExtractedText("Error processing image.");
+      setTranslatedText(error.message);
     } finally {
       setIsProcessing(false);
       setProgress("Done!");
@@ -59,88 +89,102 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8 flex flex-col items-center">
-      
-      {/* Header */}
-      <header className="mb-10 text-center">
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text mb-4">
+    <div className="min-h-screen bg-slate-900 text-white p-6 flex flex-col items-center font-sans">
+      <header className="mb-8 text-center">
+        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text">
           LingoLens
         </h1>
-        <p className="text-slate-400">Snap a photo. Read the world.</p>
+        <p className="text-slate-400">OCR & Translation Engine</p>
       </header>
 
-      {/* Main Card */}
-      <div className="w-full max-w-4xl bg-slate-800 rounded-2xl p-6 shadow-2xl border border-slate-700">
+      <div className="w-full max-w-4xl bg-slate-800 rounded-3xl p-8 shadow-2xl border border-slate-700">
         
-        {/* Upload Section */}
-        <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-600 rounded-xl p-8 hover:border-blue-400 transition cursor-pointer relative bg-slate-800/50">
-          <input 
-            type="file" 
-            accept="image/*" 
-            onChange={handleImageUpload} 
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
+        {/* === CONTROLS === */}
+        <div className="flex flex-col md:flex-row justify-center gap-6 mb-8">
+            {/* 1. Document Language (Source) */}
+            <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> Document Language
+                </label>
+                <select 
+                    value={sourceLang} 
+                    onChange={(e) => setSourceLang(e.target.value)}
+                    className="bg-slate-900 text-white p-3 rounded-lg border border-slate-600 focus:border-cyan-400 outline-none"
+                >
+                    <option value="eng">English Document</option>
+                    <option value="jpn">Japanese (日本語)</option>
+                    <option value="chi_sim">Chinese (Simplified)</option>
+                    <option value="fra">French</option>
+                    <option value="spa">Spanish</option>
+                    <option value="hin">Hindi</option>
+                </select>
+            </div>
+
+            <ArrowRight className="hidden md:block w-6 h-6 self-center text-slate-600" />
+
+            {/* 2. Target Language */}
+            <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
+                    <Globe className="w-4 h-4" /> Translate To
+                </label>
+                <select 
+                    value={targetLang} 
+                    onChange={(e) => setTargetLang(e.target.value)}
+                    className="bg-slate-900 text-white p-3 rounded-lg border border-slate-600 focus:border-cyan-400 outline-none"
+                >
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="ja">Japanese</option>
+                    <option value="hi">Hindi</option>
+                </select>
+            </div>
+        </div>
+
+        {/* Upload Zone */}
+        <div className="group relative flex flex-col items-center justify-center border-2 border-dashed border-slate-600 rounded-2xl p-10 hover:border-cyan-400 hover:bg-slate-700/30 transition-all cursor-pointer">
+          <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
           {!image ? (
-            <div className="text-center">
-              <Camera className="w-16 h-16 text-slate-500 mx-auto mb-4" />
-              <p className="text-lg font-medium">Drop an image or click to upload</p>
+            <div className="text-center space-y-4">
+              <Camera className="w-12 h-12 text-cyan-400 mx-auto" />
+              <p className="text-lg font-medium text-slate-300">Drop your receipt/image here</p>
             </div>
           ) : (
-            <img src={image} alt="Preview" className="max-h-64 rounded-lg shadow-lg object-contain" />
+            <img src={image} alt="Preview" className="max-h-64 rounded-lg shadow-lg" />
           )}
         </div>
 
         {/* Action Button */}
-        <div className="mt-6 flex justify-center">
+        <div className="mt-8 flex justify-center">
           <button 
             onClick={processImage}
             disabled={!image || isProcessing}
-            className={`flex items-center gap-2 px-8 py-4 rounded-full font-bold text-lg transition-all ${
-              !image 
-                ? "bg-slate-700 text-slate-500 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg hover:shadow-blue-500/25"
-            }`}
+            className={`
+              flex items-center gap-3 px-8 py-3 rounded-full font-bold text-lg shadow-xl transition-all
+              ${!image ? "bg-slate-700 text-slate-500" : "bg-cyan-600 hover:bg-cyan-500 text-white"}
+            `}
           >
-            {isProcessing ? (
-              <><RefreshCw className="animate-spin" /> {progress}</>
-            ) : (
-              <><Languages /> Extract & Translate</>
-            )}
+            {isProcessing ? <RefreshCw className="animate-spin" /> : <Languages />}
+            {isProcessing ? progress : "Extract & Translate"}
           </button>
         </div>
 
-        {/* Results Section (Grid) */}
+        {/* Results */}
         {(extractedText || translatedText) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10 animate-fade-in-up">
-            
-            {/* Extracted Text */}
-            <div className="bg-slate-900 p-6 rounded-xl border border-slate-700">
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Original Text</h3>
-              <p className="whitespace-pre-wrap text-slate-300 font-mono text-sm">
-                {extractedText || "..."}
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+            <div className="bg-slate-900 p-6 rounded-2xl border border-slate-700">
+              <h3 className="text-xs font-bold text-slate-500 uppercase mb-4">Original Text (OCR)</h3>
+              <p className="whitespace-pre-wrap text-slate-300 font-mono text-sm">{extractedText}</p>
             </div>
-
-            {/* Translated Text */}
-            <div className="bg-slate-900 p-6 rounded-xl border border-blue-500/30 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-              <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <ArrowRight className="w-4 h-4" /> Translated Result
-              </h3>
+            <div className="bg-slate-900 p-6 rounded-2xl border border-cyan-500/30">
+              <h3 className="text-xs font-bold text-cyan-400 uppercase mb-4">Translation</h3>
               <p className="whitespace-pre-wrap text-white font-medium text-lg">
-                {translatedText || "..."}
+                {translatedText || "Waiting for translation..."}
               </p>
             </div>
-
           </div>
         )}
-
       </div>
-      
-      {/* Footer */}
-      <footer className="mt-12 text-slate-600 text-sm">
-        Powered by Tesseract.js & Lingo.dev
-      </footer>
     </div>
   );
 }
