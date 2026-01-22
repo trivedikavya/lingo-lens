@@ -1,16 +1,85 @@
-# React + Vite
+# LingoLens 📸
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**LingoLens** is a powerful OCR (Optical Character Recognition) and Translation tool built for the **Lingo.dev Community Sprint**. It allows users to upload images of text (receipts, signs, documents) and instantly translates them using the **Lingo.dev SDK**.
 
-Currently, two official plugins are available:
+## 🎥 Demo & Quick Test
+* **Watch the Demo:** A full walkthrough video (`demo.mp4`) is included in the app UI and the `public/` folder.
+* **One-Click Test:** Don't have a receipt handy? Use the **"Try with Sample Receipt"** button in the app to test the Lingo.dev translation engine instantly.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Lingo.dev Features Highlighted
+This project demonstrates three key capabilities of the Lingo.dev ecosystem:
+1.  **Lingo.dev SDK Integration:** Seamlessly integrates `lingo.dev/sdk` into a React environment.
+2.  **Real-time Localization:** Uses `lingo.localizeText` to provide accurate, context-aware translations for dynamic user content.
+3.  **Secure Backend Proxy:** Implements a robust Node.js/Express bridge (`server.js`) to handle API authentication securely, resolving browser CORS restrictions.
 
-## React Compiler
+## 🛠️ Setup Instructions
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
+* Node.js (v18 or higher)
+* A Lingo.dev API Key
 
-## Expanding the ESLint configuration
+### 1. Installation
+Navigate to the project directory and install dependencies:
+```bash
+cd community/lingo-lens
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 2. Configuration
+Create a .env file in the root of the lingo-lens directory and add your API key:
+```bash
+VITE_LINGO_API_KEY=lin_your_actual_api_key_here
+```
+
+## 3. Running the App
+
+This application requires **both the backend server** (to communicate with Lingo.dev) and the **frontend client** (React) to run simultaneously.
+
+---
+
+### Terminal 1 — Backend Server
+
+```bash
+node server.js
+```
+
+You should see: `✅ Proxy Server running on http://localhost:3001`
+
+
+### Terminal 2 — Frontend Client
+
+```bash
+npm run dev
+```
+
+Open the URL shown in the terminal: `(usually: http://localhost:5173)`
+
+## 📖 How It Works
+
+1. **Upload**  
+   User uploads an image or clicks **"Try with Sample Receipt"**.
+
+2. **Extract**  
+   Tesseract.js (running in the browser) extracts raw text from the image.
+
+3. **Translate**  
+   The frontend sends the extracted text to the local Express server.
+
+4. **Process**  
+   The server authenticates with the Lingo.dev SDK and processes the translation.
+
+5. **Result**  
+   The translated text appears instantly on the screen.
+
+---
+
+## ✨ Summary of Changes in this README
+
+- **Added "Demo & Quick Test" Section**  
+  Explicitly highlights `demo.mp4` and the **One-Click Test** button for judges.
+
+- **Clarified Features**  
+  Emphasized the **Secure Backend Proxy** as a key technical and security feature.
+
+- **Simple Instructions**  
+  Setup steps are clear and minimal so the project can be run in seconds.

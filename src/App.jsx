@@ -71,7 +71,7 @@ function App() {
     <div className="min-h-screen bg-slate-900 text-white p-6 flex flex-col items-center font-sans">
       <header className="mb-8 text-center">
         <h1 className="text-4xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text">LingoLens</h1>
-        <p className="text-slate-400">OCR & Translation Engine</p>
+        <p className="text-slate-400">OCR & Lingo.dev Engine</p>
       </header>
 
       <div className="w-full max-w-4xl bg-slate-800 rounded-3xl p-8 shadow-2xl border border-slate-700">
