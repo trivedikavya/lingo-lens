@@ -6,7 +6,7 @@
 We have provided resources to help you test the application quickly:
 
 ### 1. Watch the Demo
-> **[Click here to watch the Demo Video (demo.mp4)](./demo.mp4)** > *(Note: Requires `demo.mp4` to be in the project root)*
+> **[Click here to watch the Demo Video on YouTube 📺](https://youtu.be/UK_GkEOumnI)**
 
 ### 2. Test with Sample Data
 I have included a sample receipt image in this repository for you to test with:
