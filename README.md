@@ -1,16 +1,29 @@
 # LingoLens 📸
 
-**LingoLens** is a powerful OCR (Optical Character Recognition) and Translation tool built for the **Lingo.dev Community Sprint**. It allows users to upload images of text (receipts, signs, documents) and instantly translates them using the **Lingo.dev SDK**.
+**LingoLens** is a powerful OCR (Optical Character Recognition) and Translation tool built for the **Lingo.dev Community Sprint**. It allows users to upload images of text (receipts, signs, documents), extracts the text using Tesseract.js, and translates it using the **Lingo.dev SDK**.
 
-## 🎥 Demo & Quick Test
-* **Watch the Demo:** A full walkthrough video (`demo.mp4`) is included in the app UI and the `public/` folder.
-* **One-Click Test:** Don't have a receipt handy? Use the **"Try with Sample Receipt"** button in the app to test the Lingo.dev translation engine instantly.
+## 🎥 Demo & Testing
+We have provided resources to help you test the application quickly:
+
+### 1. Watch the Demo
+> **[Click here to watch the Demo Video (demo.mp4)](./demo.mp4)** > *(Note: Requires `demo.mp4` to be in the project root)*
+
+### 2. Test with Sample Data
+I have included a sample receipt image in this repository for you to test with:
+* **File:** [`test.png`](./test.png)
+* **Usage:** You can upload this image in the app to see the OCR and Translation in action immediately.
 
 ## 🚀 Lingo.dev Features Highlighted
-This project demonstrates three key capabilities of the Lingo.dev ecosystem:
+This project demonstrates key capabilities of the Lingo.dev ecosystem:
 1.  **Lingo.dev SDK Integration:** Seamlessly integrates `lingo.dev/sdk` into a React environment.
 2.  **Real-time Localization:** Uses `lingo.localizeText` to provide accurate, context-aware translations for dynamic user content.
 3.  **Secure Backend Proxy:** Implements a robust Node.js/Express bridge (`server.js`) to handle API authentication securely, resolving browser CORS restrictions.
+
+## 🛠️ Setup Instructions
+
+### Prerequisites
+* Node.js (v18 or higher)
+* A Lingo.dev API Key
 
 ## 🛠️ Setup Instructions
 
