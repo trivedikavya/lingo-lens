@@ -28,11 +28,6 @@ This project demonstrates key capabilities of the Lingo.dev ecosystem:
 * Node.js (v18 or higher)
 * A Lingo.dev API Key
 
-## 🛠️ Setup Instructions
-
-### Prerequisites
-* Node.js (v18 or higher)
-* A Lingo.dev API Key
 
 ### 1. Installation
 Navigate to the project directory and install dependencies:
